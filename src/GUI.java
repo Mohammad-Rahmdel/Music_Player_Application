@@ -23,14 +23,16 @@ public class GUI {
         westPanel = new JPanel();
         mouseHandler = new MouseHandler();
         act = new ActHandler();
-        createTrayIcon();
+//        createTrayIcon();
         createMainPanel();
         createWestPanel();
     }
+
     public void show(){
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.setVisible(true);
     }
+
     private void createWestPanel(){
         westPanel.setLayout(new BoxLayout(westPanel, BoxLayout.Y_AXIS));
         JLabel labels[] = new JLabel[5];
@@ -57,7 +59,7 @@ public class GUI {
         JLabel p = new JLabel("Playlists");
         p.setLayout(new BorderLayout());
         JButton pButton = new JButton();
-        ImageIcon icon = new ImageIcon("add.png");
+        ImageIcon icon = new ImageIcon("./images/add.png");
         icon.setImage(icon.getImage().getScaledInstance(10, 10, Image.SCALE_SMOOTH));
         pButton.setIcon(icon);
         pButton.addMouseListener(new MouseInputAdapter() {
@@ -98,7 +100,7 @@ public class GUI {
     private void createToolBar(){
         Color color = new Color(66, 75, 244);
         toolBar = new JToolBar();
-        JLabel nowPlaying = new JLabel("Now Playing   ");
+        JLabel nowPlaying = new JLabel(" Playing   ");
         nowPlaying.setFont(new Font("Arial", Font.PLAIN, 30));
         nowPlaying.setBackground(color);
         nowPlaying.setForeground(Color.WHITE);
