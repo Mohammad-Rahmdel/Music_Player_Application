@@ -11,13 +11,8 @@ public class Play extends Thread {
 
 
     private int offset;
-    private volatile boolean flag = true;
     private AdvancedPlayer p;
 
-    public void stopRunning()
-    {
-        flag = false;
-    }
 
     public Play(){
         this.offset = 0;
@@ -43,7 +38,6 @@ public class Play extends Thread {
                     p.play();
                 else
                     p.play((int) (offset*sampleRate/(time*1000)), 130000);
-//                    p.play(offset);
 
             } catch (Exception e) {
                 System.out.println(e);
