@@ -60,6 +60,8 @@ public class Music extends JPanel{
     public String getTime() {
         long min = time / 60;
         long sec = time % 60;
+        if(sec < 10)
+            return min + ":0" + sec;
         return min + ":" + sec;
     }
 
@@ -149,16 +151,30 @@ public class Music extends JPanel{
         this.addMouseListener(new MouseInputAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (GUI.nowPlaying != null) {
-                    GUI.nowPlaying.offset = 0;
+
+                if (GUI.getMode2().equals("play")){
                     GUI.p.pause();
                     GUI.nowPlaying = Music.this;
                     GUI.p = new Play(0, Music.this);
                     GUI.p.start();
                 }
-
-                else
+                else {
                     GUI.nowPlaying = Music.this;
+                    GUI.p = new Play(0, Music.this);
+                    GUI.p.start();
+                    GUI.makePlay();
+                }
+
+//                if (GUI.nowPlaying != null) {
+//                    GUI.nowPlaying.offset = 0;
+//                    GUI.p.pause();
+//                    GUI.nowPlaying = Music.this;
+//                    GUI.p = new Play(0, Music.this);
+//                    GUI.p.start();
+//                }
+//
+//                else
+//                    GUI.nowPlaying = Music.this;
 
                 Border border = BorderFactory.createLineBorder(Color.BLUE, 1);
                 for (Music m:GUI.songs) {

@@ -45,10 +45,22 @@ public class GUI {
     private JToolBar toolBar;
     private MouseHandler mouseHandler;
     private String mode1;       //for shuffle or repeat
-    private String mode2;       //for play or pause
+    private static String mode2;       //for play or pause
     private boolean mute;       //for mute or not
     Border border;
     JComboBox[] comboBoxes;
+
+    public static String getMode2(){
+        return mode2;
+    }
+
+
+    public static void makePlay(){
+        mode2 = "play";
+        ImageIcon icon = new ImageIcon("pics/7-pause.png");
+        icon.setImage(icon.getImage().getScaledInstance(20, 20, Image.SCALE_SMOOTH));
+        controlButtons[3].setIcon(icon);
+    }
 
     public GUI() throws InvalidDataException, IOException, UnsupportedTagException {
         comboBoxes = new JComboBox[4];
@@ -106,7 +118,7 @@ public class GUI {
         createToolBar();
         createBottomPanel();
         topPanel.add(toolBar,  BorderLayout.WEST);
-        Color color = new Color(16, 12, 137);
+        Color color = new Color(19, 5, 11, 220);
         topPanel.setBackground(color);
         toolBar.setBackground(color);
         mainPanel.add(topPanel, BorderLayout.NORTH);
@@ -263,7 +275,7 @@ public class GUI {
     }
     private void createSettings(){
         screen3 = new JPanel();
-        screen3.setBackground(new Color(139, 177, 237));
+        screen3.setBackground(new Color(4, 8, 19));
         SpringLayout sLayout = new SpringLayout();
         JPanel[] panels = new JPanel[3];
 
@@ -465,7 +477,7 @@ public class GUI {
 
         JPanel bar = new JPanel();
         bar.setPreferredSize(new Dimension(mainPanel.getWidth(), 70));
-        bar.setBackground(new Color(16, 12, 137));
+        bar.setBackground(new Color(4, 3, 17));
         SpringLayout sLayout = new SpringLayout();
         bar.setLayout(sLayout);
 
