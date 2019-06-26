@@ -7,10 +7,11 @@ import java.net.UnknownHostException;
 public class LyricDownloader extends Thread{
     private static final String USER_AGENT = "Mozilla/5.0";
     private static final String search_artist = "https://www.lyricsfreak.com/search.php?q=";
-    private String lyrics;
+    private static String lyrics = "null";
 
     private String title;
     private String artist;
+
 
     public String getLyrics() {
         return lyrics;
@@ -148,14 +149,20 @@ public class LyricDownloader extends Thread{
         String lyric = "NOT FOUND";
         for (int i = 0; i < 10; i++){
             lyric = downloader(i);
-            if (!lyric.equals("NOT FOUND"))
+            if (!lyric.equals("NOT FOUND")){
+                lyrics = "NOT FOUND";
                 break;
-            if (lyric.equals("NO INTERNET ACCESS"))
+            }
+
+            if (lyric.equals("NO INTERNET ACCESS")){
+                lyrics = "NO INTERNET ACCESS";
                 break;
+            }
+
         }
 
         lyrics = lyric;
-//        System.out.println(lyric);
+//        System.out.println(lyrics);
     }
 
     public void run(){

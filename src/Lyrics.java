@@ -4,15 +4,41 @@ import java.nio.file.Paths;
 
 
 public class Lyrics {
-    private int fontSize;
-    private String fontName;
+    private static int fontSize;
+    private static String color;
+    private static String fontName;
+    private File text;
+    public Lyrics(){
 
-    public void setFontSize(int fontSize) {
-        this.fontSize = fontSize;
     }
 
-    public void setFontName(String fontName) {
-        this.fontName = fontName;
+    public static void setFontSize(int fontSize) {
+        Lyrics.fontSize = fontSize;
+    }
+
+    public static void setFontName(String fontName) {
+        Lyrics.fontName = fontName;
+    }
+
+    public static void setColor(String color) {
+
+        Lyrics.color = color;
+    }
+
+    public static int getFontSize() {
+        return fontSize;
+    }
+
+    public static String getColor() {
+        return color;
+    }
+
+    public static String getFontName() {
+        return fontName;
+    }
+
+    public File getText() {
+        return text;
     }
 
 
