@@ -14,9 +14,8 @@ import java.util.ArrayList;
 
 public class GUI {
 
-
-
     static ArrayList<Music>songs;
+    static ArrayList<Music>favorites;
     private ArrayList<Music>recentlyPlayed;
     private ArrayList<Music>mostPlayed;
     private ArrayList<Playlist>playlists;
@@ -45,20 +44,20 @@ public class GUI {
     private JLabel addSong;
     private JToolBar toolBar;
     private MouseHandler mouseHandler;
-    private ActHandler act;
     private String mode1;       //for shuffle or repeat
     private String mode2;       //for play or pause
     private boolean mute;       //for mute or not
     Border border;
     JComboBox[] comboBoxes;
 
-    public GUI(){
+    public GUI() throws InvalidDataException, IOException, UnsupportedTagException {
         comboBoxes = new JComboBox[4];
         for (int i = 0; i < 4; i++) {
             comboBoxes[i] = new JComboBox();
         }
         border = BorderFactory.createLineBorder(Color.GRAY, 1);
         songs = new ArrayList<>();
+        favorites = new ArrayList<>();
         recentlyPlayed = new ArrayList<>();
         mostPlayed = new ArrayList<>();
         playlists = new ArrayList<>();
@@ -66,9 +65,9 @@ public class GUI {
             loadFromFile();
         }
 
-        frame = createFrame("Music Player", 900, 700);
-        frame.setMinimumSize(new Dimension(900, 700));
-        frame.setMaximumSize(new Dimension(900, 700));
+        frame = createFrame("Music Player", 950, 700);
+        frame.setMinimumSize(new Dimension(950, 700));
+        frame.setMaximumSize(new Dimension(950, 700));
         frame.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
@@ -83,9 +82,9 @@ public class GUI {
         screen = new JPanel();
 
         mouseHandler = new MouseHandler();
-        act = new ActHandler();
 
-        controlButtons = new JButton[6];
+
+        controlButtons = new JButton[5];
 
         mode2 = "pause";
         mute = false;
@@ -241,7 +240,7 @@ public class GUI {
             in.close();
             fi.close();
         }catch (IOException | ClassNotFoundException | InvalidDataException |
-                UnsupportedTagException |  LineUnavailableException |
+                UnsupportedTagException | LineUnavailableException |
                 UnsupportedAudioFileException ex){
             ex.printStackTrace();
         }
@@ -256,7 +255,7 @@ public class GUI {
         }
         repaint();
     }
-    private void createPlayScreen(){
+    private void createPlayScreen() throws InvalidDataException, UnsupportedTagException, IOException{
         screen1 = new Visualizer();
 
         screen1.setBackground(Color.lightGray);
@@ -427,6 +426,38 @@ public class GUI {
         button.setIcon(icon);
         return button;
     }
+    private JPanel createVolumeBar(){
+        JPanel volumeHolder = new JPanel();
+        volumeHolder.setPreferredSize(new Dimension(100, 40));
+        JSlider temp = new JSlider(0, 100);
+        temp.setPreferredSize(new Dimension(100, 40));
+        String[] getVolume = {"osascript", "-e","output volume of (get volume settings)"};
+
+        try {
+            ProcessBuilder me = new ProcessBuilder(getVolume);
+            Process process =  me.start();
+            BufferedReader stdInput = new BufferedReader(new
+                    InputStreamReader(process.getInputStream()));
+            String s;
+            while ((s = stdInput.readLine()) != null)
+            {
+                temp.setValue(Integer.decode(s));
+            }
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        }
+        temp.addChangeListener(e -> {
+
+            String[] commands = {"osascript", "-e","set volume " + (temp.getValue()/14)};
+            try {
+                new ProcessBuilder(commands).start();
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
+        });
+        volumeHolder.add(temp);
+        return volumeHolder;
+    }
     private void createBarPanel(){
         File pics = new File("pics");
         File[] directoryListing = pics.listFiles();
@@ -447,12 +478,16 @@ public class GUI {
         controlButtons[2] = createIcon("pics/3-backward.png");
         controlButtons[3] = createIcon("pics/4-play.png");
         controlButtons[4] = createIcon("pics/5-forward.png");
-        controlButtons[5] = createIcon("pics/6-speaker.png");
+        //controlButtons[5] = createIcon("pics/6-speaker.png");
 
-        for (int i = 0; i < 6; i++) {
+        for (int i = 0; i < controlButtons.length; i++) {
             controlButtons[i].addMouseListener(mouseHandler);
             controlPanel.add(controlButtons[i]);
         }
+
+        //creating volume
+        JPanel volumeHolder = createVolumeBar();
+
 
         JLabel name = new JLabel("song's name");
         if (nowPlaying != null){
@@ -472,9 +507,14 @@ public class GUI {
 
                 JPanel holding = new JPanel(new FlowLayout(FlowLayout.LEFT));
                 holding.setPreferredSize(new Dimension(100, 30));
+
                 JButton findLyrics = new JButton();
                 findLyrics.setText("Find Lyrics?");
                 findLyrics.setFont(new Font("Arial", Font.PLAIN, 15));
+
+                JButton openLyrics = new JButton();
+                openLyrics.setText("Open Lyrics");
+                openLyrics.setFont(new Font("Arial", Font.PLAIN, 15));
 
 
                 JPanel lyricsHolder = new JPanel();
@@ -493,7 +533,6 @@ public class GUI {
                 findLyrics.addMouseListener(new MouseInputAdapter() {
                     @Override
                     public void mouseClicked(MouseEvent e) {
-
                         LyricDownloader l;
                         l = new LyricDownloader(nowPlaying.getArtist(), nowPlaying.getTitle());
                         l.start();
@@ -506,10 +545,28 @@ public class GUI {
                         }
                         String lrc = l.getLyrics();
                         content.setText(lrc);
-
                     }
                 });
+
+                openLyrics.addMouseListener(new MouseInputAdapter() {
+                    @Override
+                    public void mouseClicked(MouseEvent e) {
+                        JFileChooser chooser = new JFileChooser();
+                        FileNameExtensionFilter filter = new FileNameExtensionFilter(
+                                "txt, lrc", "txt", "lrc");
+                        chooser.setFileFilter(filter);
+                        int returnVal = chooser.showOpenDialog(null);
+                        if(returnVal == JFileChooser.APPROVE_OPTION) {
+                            String lyricPath;
+                            lyricPath = chooser.getSelectedFile().getPath();
+                            //todo
+                        }
+                        content.setText("...");
+                    }
+
+                });
                 holding.add(findLyrics);
+                holding.add(openLyrics);
                 lyricsHolder.add(scrollableTextArea);
                 jFrame.add(holding, BorderLayout.NORTH);
                 jFrame.add(lyricsHolder, BorderLayout.CENTER);
@@ -518,13 +575,17 @@ public class GUI {
         });
         bar.add(name);
         bar.add(controlPanel);
+        bar.add(volumeHolder);
         bar.add(lyrics);
         sLayout.putConstraint(SpringLayout.NORTH, name, 25, SpringLayout.NORTH, bar);
         sLayout.putConstraint(SpringLayout.WEST, name, 35, SpringLayout.WEST, bar);
-        sLayout.putConstraint(SpringLayout.NORTH, lyrics, 20, SpringLayout.NORTH, bar);
-        sLayout.putConstraint(SpringLayout.WEST, lyrics, 40, SpringLayout.EAST, controlPanel);
         sLayout.putConstraint(SpringLayout.NORTH, controlPanel, 15, SpringLayout.NORTH, bar);
-        sLayout.putConstraint(SpringLayout.WEST, controlPanel, 250, SpringLayout.EAST, name);
+        sLayout.putConstraint(SpringLayout.WEST, controlPanel, 150, SpringLayout.EAST, name);
+        sLayout.putConstraint(SpringLayout.NORTH, volumeHolder, 15, SpringLayout.NORTH, bar);
+        sLayout.putConstraint(SpringLayout.WEST, volumeHolder, 15, SpringLayout.EAST, controlPanel);
+        sLayout.putConstraint(SpringLayout.NORTH, lyrics, 20, SpringLayout.NORTH, bar);
+        sLayout.putConstraint(SpringLayout.WEST, lyrics, 220, SpringLayout.EAST, volumeHolder);
+
 
         JProgressBar progressBar = new JProgressBar(0, 100);
         progressBar.setValue(50);
@@ -535,21 +596,24 @@ public class GUI {
         //Color color = new Color(0, 0, 0);
         toolBar = new JToolBar();
         JLabel nowPlaying = new JLabel("Now Playing   ");
-        nowPlaying.setFont(new Font("Arial", Font.PLAIN, 45));
+        nowPlaying.setFont(new Font("Arial", Font.PLAIN, 35));
         //nowPlaying.setBackground(color);
         nowPlaying.setForeground(Color.WHITE);
         nowPlaying.addMouseListener(mouseHandler);
         JLabel library = new JLabel("   Library   ");
-        library.setFont(new Font("Arial", Font.PLAIN, 45));
+        library.setFont(new Font("Arial", Font.PLAIN, 35));
 
         //library.setBackground(color);
         library.setForeground(Color.WHITE);
         library.addMouseListener(mouseHandler);
         JLabel settings = new JLabel("   Settings   ");
-        settings.setFont(new Font("Arial", Font.PLAIN, 45));
+        settings.setFont(new Font("Arial", Font.PLAIN, 35));
         //settings.setBackground(color);
         settings.setForeground(Color.WHITE);
         settings.addMouseListener(mouseHandler);
+
+        //todo add search field
+
         toolBar.add(nowPlaying);
         toolBar.add(library);
         toolBar.add(settings);
@@ -582,6 +646,7 @@ public class GUI {
         for (int i = 0; i < songs.size(); i++) {
             songs.get(i).setRating();
             if (songs.get(i).getRating() == 5){
+                favorites.add(songs.get(i));
                 screen2.add(songs.get(i));
             }
         }
@@ -593,6 +658,17 @@ public class GUI {
         public void mouseClicked(MouseEvent e) {
             //if user clicked on now playing tab
             if (e.getSource() == toolBar.getComponent(0)) {
+
+                try {
+                    Visualizer visualizer = new Visualizer();
+                } catch (InvalidDataException ex) {
+                    ex.printStackTrace();
+                } catch (UnsupportedTagException ex) {
+                    ex.printStackTrace();
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+
                 bottomPanel.remove(2);
                 bottomPanel.add(screen1, BorderLayout.CENTER);
                 westPanel.hide();
@@ -655,26 +731,26 @@ public class GUI {
 
             }
             //mute or not
-            else if(e.getSource() == controlButtons[5]){
-
-                if (mute){
-                    mute = false;
-                    ImageIcon icon = new ImageIcon("pics/6-speaker.png");
-                    icon.setImage(icon.getImage().getScaledInstance(20, 20, Image.SCALE_SMOOTH));
-                    controlButtons[5].setIcon(icon);
-                }
-                else{
-                    mute = true;
-                    ImageIcon icon = new ImageIcon("pics/8-mute.png");
-                    icon.setImage(icon.getImage().getScaledInstance(20, 20, Image.SCALE_SMOOTH));
-                    controlButtons[5].setIcon(icon);
-                }
-            }
+//            else if(e.getSource() == controlButtons[5]){
+//
+//                if (mute){
+//                    mute = false;
+//                    ImageIcon icon = new ImageIcon("pics/6-speaker.png");
+//                    icon.setImage(icon.getImage().getScaledInstance(20, 20, Image.SCALE_SMOOTH));
+//                    controlButtons[5].setIcon(icon);
+//                }
+//                else{
+//                    mute = true;
+//                    ImageIcon icon = new ImageIcon("pics/8-mute.png");
+//                    icon.setImage(icon.getImage().getScaledInstance(20, 20, Image.SCALE_SMOOTH));
+//                    controlButtons[5].setIcon(icon);
+//                }
+//            }
             //when user clicked on add song in library
             if (e.getSource() == addSong){
                 JFileChooser chooser = new JFileChooser();
                 FileNameExtensionFilter filter = new FileNameExtensionFilter(
-                        "mp3, ogg, wav", "mp3", "ogg", "wav");
+                        "mp3, ogg, wav, m4a", "mp3", "ogg", "wav", "m4a");
                 chooser.setFileFilter(filter);
                 int returnVal = chooser.showOpenDialog(null);
                 if(returnVal == JFileChooser.APPROVE_OPTION) {
@@ -682,8 +758,7 @@ public class GUI {
                     try {
                         newMusic = new Music(chooser.getSelectedFile().getPath());
                         songs.add(newMusic);
-                    } catch (IOException | UnsupportedTagException | InvalidDataException |
-                            LineUnavailableException | UnsupportedAudioFileException e1) {
+                    } catch (IOException | UnsupportedTagException | InvalidDataException | LineUnavailableException | UnsupportedAudioFileException e1) {
                         e1.printStackTrace();
                     }
                 }
@@ -716,11 +791,5 @@ public class GUI {
             repaint();
         }
     }
-    private class ActHandler implements ActionListener {
 
-        @Override
-        public void actionPerformed(ActionEvent e) {
-
-        }
-    }
 }
