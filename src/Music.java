@@ -1,15 +1,13 @@
 import com.mpatric.mp3agic.*;
 
+import javax.imageio.ImageIO;
 import javax.sound.sampled.*;
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.event.MouseInputAdapter;
 import java.awt.*;
 import java.awt.event.MouseEvent;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.util.ArrayList;
 
 
@@ -72,6 +70,28 @@ public class Music extends JPanel{
     public void setNumberOfPlays(int numberOfPlays) {
         this.numberOfPlays = numberOfPlays;
     }
+
+
+    public JLabel getImage() throws InvalidDataException, IOException, UnsupportedTagException {
+        if(!(GUI.nowPlaying == null))
+        {
+            String imagePath = GUI.nowPlaying.getPath();
+            Mp3File mp3file = new Mp3File(imagePath);
+            ID3v2 id3v2Tag = mp3file.getId3v2Tag();
+            albumImageData = id3v2Tag.getAlbumImage();
+            JLabel jLabel = new JLabel();
+            ImageIcon imageIcon;
+            if (albumImageData != null){
+                Image image = ImageIO.read(new ByteArrayInputStream(albumImageData));
+                image = image.getScaledInstance(300, 190, Image.SCALE_SMOOTH);
+                imageIcon = new ImageIcon(image);
+                jLabel.setIcon(imageIcon);
+            }
+            return jLabel;
+        }
+        return null;
+    }
+
 
     public Music(String dir) throws InvalidDataException, IOException, UnsupportedTagException, UnsupportedAudioFileException, LineUnavailableException{
 

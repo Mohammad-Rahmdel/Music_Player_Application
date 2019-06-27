@@ -31,7 +31,7 @@ public class GUI {
     private static JPanel barPanel;
 
     private static JPanel screen;
-    private static Visualizer screen1;         //now playing screen
+    private static JPanel screen1;         //now playing screen
     private static JPanel screen2;         //library screen
     private static JPanel screen3;         //settings screen
     private JPanel titles;
@@ -268,9 +268,9 @@ public class GUI {
         repaint();
     }
     private void createPlayScreen() throws InvalidDataException, UnsupportedTagException, IOException{
-        screen1 = new Visualizer();
+        screen1 = new JPanel();
+//        screen1.setBackground(Color.lightGray);
 
-        screen1.setBackground(Color.lightGray);
         //TODO: GHAZAL: add visualization here//
     }
     private void createSettings(){
@@ -671,15 +671,27 @@ public class GUI {
             //if user clicked on now playing tab
             if (e.getSource() == toolBar.getComponent(0)) {
 
-                try {
-                    Visualizer visualizer = new Visualizer();
-                } catch (InvalidDataException ex) {
-                    ex.printStackTrace();
-                } catch (UnsupportedTagException ex) {
-                    ex.printStackTrace();
-                } catch (IOException ex) {
-                    ex.printStackTrace();
+
+                if (nowPlaying != null){
+                    JPanel musicArt = new JPanel();
+                    JLabel label = null;
+                    try {
+                        label = nowPlaying.getImage();
+                    } catch (InvalidDataException ex) {
+                        ex.printStackTrace();
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    } catch (UnsupportedTagException ex) {
+                        ex.printStackTrace();
+                    }
+                    if (label != null) {
+                        musicArt.add(label);
+                        screen1 = musicArt;
+                        screen1.revalidate();
+                    }
                 }
+
+
 
                 bottomPanel.remove(2);
                 bottomPanel.add(screen1, BorderLayout.CENTER);
