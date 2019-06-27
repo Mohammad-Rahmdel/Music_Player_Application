@@ -152,10 +152,6 @@ public class Lyrics {
         }
         return res;
     }
-    public static void main(String[] args){
-        String path = "./lyrics/Fall in Lie.lrc";
-        lyricCleaner(path);
 
-    }
 }
 

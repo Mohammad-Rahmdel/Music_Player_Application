@@ -24,6 +24,8 @@ import java.util.concurrent.TimeUnit;
 
 public class GUI {
 
+    private GetLyric thread2 = null;
+
     static ArrayList<Music>songs;
     static ArrayList<Music>favorites;
     private ArrayList<Music>recentlyPlayed;
@@ -528,6 +530,9 @@ public class GUI {
         lyrics.addMouseListener(new MouseInputAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
+
+
+
                 JFrame jFrame = createFrame("Lyrics", 600, 400);
                 jFrame.setLayout(new BorderLayout());
 
@@ -535,7 +540,7 @@ public class GUI {
                 holding.setPreferredSize(new Dimension(100, 30));
 
                 JButton findLyrics = new JButton();
-                findLyrics.setText("Find Lyrics?");
+                findLyrics.setText("Find Lyrics");
                 findLyrics.setFont(new Font("Arial", Font.PLAIN, 15));
 
                 JButton openLyrics = new JButton();
@@ -559,18 +564,25 @@ public class GUI {
                 findLyrics.addMouseListener(new MouseInputAdapter() {
                     @Override
                     public void mouseClicked(MouseEvent e) {
+
+                        if (thread2 != null)
+                            thread2.terminate();
+
                         LyricDownloader l;
-                        l = new LyricDownloader(nowPlaying.getArtist(), nowPlaying.getTitle());
-                        l.start();
-                        while (l.getLyrics().equals("null")){
-                            try {
-                                Thread.currentThread().sleep(100);
-                            } catch (InterruptedException ex) {
-                                ex.printStackTrace();
+                        if (nowPlaying != null){
+                            l = new LyricDownloader(nowPlaying.getArtist(), nowPlaying.getTitle());
+                            l.start();
+                            while (l.getLyrics().equals("null")){
+                                try {
+                                    Thread.currentThread().sleep(100);
+                                } catch (InterruptedException ex) {
+                                    ex.printStackTrace();
+                                }
                             }
+                            String lrc = l.getLyrics();
+                            content.setText(lrc);
                         }
-                        String lrc = l.getLyrics();
-                        content.setText(lrc);
+
                     }
                 });
 
@@ -583,10 +595,14 @@ public class GUI {
                         chooser.setFileFilter(filter);
                         int returnVal = chooser.showOpenDialog(null);
                         if(returnVal == JFileChooser.APPROVE_OPTION) {
+
+
                             String lyricPath;
                             lyricPath = chooser.getSelectedFile().getPath();
 
                             if (lyricPath.endsWith("txt")){
+                                if (thread2 != null)
+                                    thread2.terminate();
                                 Path pathP = Paths.get(lyricPath);
                                 try {
                                     String text = Files.readString(pathP, StandardCharsets.US_ASCII);
@@ -596,10 +612,14 @@ public class GUI {
                                 }
                             }
                             else if(lyricPath.endsWith("lrc")){
-                                GetLyric thread2 = new GetLyric(lyricPath, content);
+                                if (thread2 != null)
+                                    thread2.terminate();
+                                thread2 = new GetLyric(lyricPath, content);
                                 thread2.start();
 
                             } else {
+                                if (thread2 != null)
+                                    thread2.terminate();
                                 content.setText("Please Choose a txt/lrc file.");
 
 
@@ -888,6 +908,12 @@ public class GUI {
         private Lyrics lrc = new Lyrics();
         private String lyric = "";
         JTextArea content;
+        private boolean flag = true;
+
+        public void terminate(){
+            System.out.println("terminating ...");
+            this.flag = false;
+        }
 
 
         public GetLyric(String lrcPath, JTextArea content){
@@ -896,31 +922,32 @@ public class GUI {
         }
 
         @Override
-        public void run()
-        {
-            long time = nowPlaying.getMsTime();
-            while(!p.getComplete()) {
+        public void run() {
+            try {
+                while (!p.getComplete() && this.flag) {
 
-                if (p != null) {
+                    if (p != null) {
 
-                    long currentTime = p.getPosition();
-                    this.lyric = lrc.lyricAdjuster(lrcPath, currentTime);
+                        long currentTime = p.getPosition() + nowPlaying.offset;
+                        this.lyric = lrc.lyricAdjuster(lrcPath, currentTime);
 
-                    System.out.println(currentTime);
-//                    System.out.println(this.lyric);
-                    this.content.setText(this.lyric);
+//                    System.out.println(currentTime);
+                        this.content.setText(this.lyric);
 
+                    }
+
+                    try {
+                        Thread.sleep(3000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
 
-                try {
-                    Thread.sleep(3000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                System.out.println("TERMINATED");
+            } catch (NullPointerException e) {
             }
-
-//            System.out.println("TERMINATED");
         }
+
     }
 
 }
