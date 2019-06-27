@@ -10,7 +10,13 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class GUI {
 
@@ -63,6 +69,10 @@ public class GUI {
     }
 
     public GUI() throws InvalidDataException, IOException, UnsupportedTagException {
+
+        PlayButtonUpdator thread = new PlayButtonUpdator();
+        thread.start();
+
         comboBoxes = new JComboBox[4];
         for (int i = 0; i < 4; i++) {
             comboBoxes[i] = new JComboBox();
@@ -672,7 +682,9 @@ public class GUI {
             if (e.getSource() == toolBar.getComponent(0)) {
 
 
+
                 if (nowPlaying != null){
+
                     JPanel musicArt = new JPanel();
                     JLabel label = null;
                     try {
@@ -816,4 +828,37 @@ public class GUI {
         }
     }
 
+
+
+    private class PlayButtonUpdator extends Thread
+    {
+        @Override
+        public void run()
+        {
+            while(true) {
+                if (p != null) {
+                    try {
+                        if (p.getComplete() && mode2.equals("play")) {
+                            mode2 = "pause";
+                            ImageIcon icon = new ImageIcon("pics/4-play.png");
+                            icon.setImage(icon.getImage().getScaledInstance(20, 20, Image.SCALE_SMOOTH));
+                            controlButtons[3].setIcon(icon);
+                        }
+                    }catch (NullPointerException e){
+                        System.out.println("Null pointer");
+                    }
+
+                }
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
 }
+
+
+
