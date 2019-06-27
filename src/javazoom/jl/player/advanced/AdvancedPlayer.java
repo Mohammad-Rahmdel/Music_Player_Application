@@ -262,4 +262,9 @@ public class AdvancedPlayer
 		listener.playbackFinished(createEvent(PlaybackEvent.STOPPED));
 		close();
 	}
+
+
+	public boolean getComplete(){
+		return this.complete;
+	}
 }

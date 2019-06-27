@@ -12,27 +12,25 @@ public class Play extends Thread {
 
     private int offset;
     private AdvancedPlayer p;
+    public Music music;
 
 
-    public Play(){
-        this.offset = 0;
-    }
-
-    public Play(int offset){
+    public Play(int offset, Music music){
+        this.music = music;
         this.offset = offset;
     }
+
 
     public void run() {
 
             try {
 
-                Mp3File temp1 = new Mp3File("./Preach.mp3");
+                Mp3File temp1 = new Mp3File(music.getPath());
                 int sampleRate = temp1.getFrameCount();
                 long time = temp1.getLengthInSeconds();
 
 
-
-                FileInputStream file = new FileInputStream("./Preach.mp3");
+                FileInputStream file = new FileInputStream(music.getPath());
                 p = new AdvancedPlayer(file);
                 if(offset == 0)
                     p.play();
@@ -42,7 +40,6 @@ public class Play extends Thread {
             } catch (Exception e) {
                 System.out.println(e);
             }
-            System.out.println("Stopped Running....");
 
     }
 
@@ -50,6 +47,10 @@ public class Play extends Thread {
         int last = p.getPosition();
         p.close();
         return last + offset;
+    }
+
+    public boolean getComplete(){
+        return p.getComplete();
     }
 
 }
