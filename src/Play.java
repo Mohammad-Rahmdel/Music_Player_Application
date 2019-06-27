@@ -53,4 +53,8 @@ public class Play extends Thread {
         return p.getComplete();
     }
 
+    public int getPosition(){
+        return p.getPosition();
+    }
+
 }

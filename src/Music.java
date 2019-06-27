@@ -20,19 +20,20 @@ public class Music extends JPanel{
 //    private AudioInputStream audioInputStream;
 
     private int rating;
-    private String title;
+    private String title = "";
     private Lyrics lyrics;
-    private String artist;
-    private String album;
+    private String artist = "";
+    private String album = "";
     private String path = "QQQ";
     private long time;
-    private String genre;
+    private String genre = "";
     private byte[] albumImageData;
     private boolean recentlyPlayed;
     private int numberOfPlays;
     private ArrayList<Star>starsButtons;
     private File f;
     public int offset = 0;
+    private long msTime;
 
 
     public String getTitle() {
@@ -138,6 +139,7 @@ public class Music extends JPanel{
         Mp3File mp3file = new Mp3File(dir);
 
         time = mp3file.getLengthInSeconds();
+        msTime = mp3file.getLengthInMilliseconds();
 
         if (mp3file.hasId3v1Tag()) {
             ID3v1 id3v1Tag = mp3file.getId3v1Tag();
@@ -152,16 +154,15 @@ public class Music extends JPanel{
         if (mp3file.hasId3v2Tag()) {
             ID3v2 id3v2Tag = mp3file.getId3v2Tag();
 
-            if (this.artist == "")
+            if (this.artist.equals(""))
                 this.artist = id3v2Tag.getArtist();
-            if (this.title == "")
+            if (this.title.equals(""))
                 this.title = id3v2Tag.getTitle();
-            if (this.album == "")
+            if (this.album.equals(""))
                 this.album = id3v2Tag.getAlbum();
-            if (this.genre == "" || this.genre.toLowerCase() == "unknown")
+            if (this.genre.equals("") || this.genre.toLowerCase().equals("unknown"))
                 this.genre = id3v2Tag.getGenreDescription();
 
-//            System.out.println(id3v2Tag.getGenreDescription());
 
             albumImageData = id3v2Tag.getAlbumImage();
         }
@@ -324,5 +325,9 @@ public class Music extends JPanel{
 
     public void pauseMusic(){
 
+    }
+
+    public long getMsTime(){
+        return this.msTime;
     }
 }

@@ -10,6 +10,10 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -581,9 +585,28 @@ public class GUI {
                         if(returnVal == JFileChooser.APPROVE_OPTION) {
                             String lyricPath;
                             lyricPath = chooser.getSelectedFile().getPath();
-                            //todo
+
+                            if (lyricPath.endsWith("txt")){
+                                Path pathP = Paths.get(lyricPath);
+                                try {
+                                    String text = Files.readString(pathP, StandardCharsets.US_ASCII);
+                                    content.setText(text);
+                                } catch (IOException ex) {
+                                    ex.printStackTrace();
+                                }
+                            }
+                            else if(lyricPath.endsWith("lrc")){
+                                GetLyric thread2 = new GetLyric(lyricPath, content);
+                                thread2.start();
+
+                            } else {
+                                content.setText("Please Choose a txt/lrc file.");
+
+
+
+                            }
                         }
-                        content.setText("...");
+
                     }
 
                 });
@@ -845,7 +868,7 @@ public class GUI {
                             controlButtons[3].setIcon(icon);
                         }
                     }catch (NullPointerException e){
-                        System.out.println("Null pointer");
+                      //  System.out.println("Null pointer");
                     }
 
                 }
@@ -855,6 +878,48 @@ public class GUI {
                     e.printStackTrace();
                 }
             }
+        }
+    }
+
+
+    private class GetLyric extends Thread
+    {
+        private String lrcPath;
+        private Lyrics lrc = new Lyrics();
+        private String lyric = "";
+        JTextArea content;
+
+
+        public GetLyric(String lrcPath, JTextArea content){
+            this.lrcPath = lrcPath;
+            this.content = content;
+        }
+
+        @Override
+        public void run()
+        {
+            long time = nowPlaying.getMsTime();
+            while(!p.getComplete()) {
+
+                if (p != null) {
+
+                    long currentTime = p.getPosition();
+                    this.lyric = lrc.lyricAdjuster(lrcPath, currentTime);
+
+                    System.out.println(currentTime);
+//                    System.out.println(this.lyric);
+                    this.content.setText(this.lyric);
+
+                }
+
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+
+//            System.out.println("TERMINATED");
         }
     }
 

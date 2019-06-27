@@ -81,6 +81,77 @@ public class Lyrics {
         return lyric.trim();
     }
 
+    public String lyricDecoder(String path){
+
+        String lyrics = "";
+
+        try {
+            FileInputStream fstream = new FileInputStream(path);
+            BufferedReader br = new BufferedReader(new InputStreamReader(fstream));
+
+            String strLine;
+
+            while ((strLine = br.readLine()) != null)   {
+                if (strLine.length() > 0) {
+                  if (strLine.startsWith("[")){
+                      if (strLine.substring(1,2).equals("0")){
+                          lyrics += strLine + '\n';
+                      }
+                  }
+                }
+
+            }
+
+            fstream.close();
+
+        }
+        catch (Exception e) {
+            System.out.println("execption = " + e);
+        }
+
+        return lyrics;
+    }
+
+
+    public String lyricAdjuster(String path, long currentTime){
+        String decoded = lyricDecoder(path);
+
+        String[] lines = decoded.split("\n");
+        int num = 5;
+
+        String res = "";
+        int j = -1;
+        for (int i = 0; i < lines.length; i++) {
+            int min = Integer.parseInt(lines[i].substring(1, 3));
+            int sec = Integer.parseInt(lines[i].substring(4, 6));
+            int msec = Integer.parseInt(lines[i].substring(7, 9));
+            long time = (min * 60 + sec) * 1000 + msec;
+
+            if (time > currentTime) {
+                j = i;
+                break;
+            }
+        }
+        if (j == -1 || j > lines.length - 3)
+            j = lines.length - 3;
+
+        if (j < 2)
+            j = 2;
+
+
+        for (int i = 0; i < num; i++) {
+
+            try {
+                String line = lines[j-num+i+3];
+                res += line.substring(10) + '\n';
+            } catch (StringIndexOutOfBoundsException e){
+                res += '\n';
+            }
+
+
+        }
+        return res;
+    }
     public static void main(String[] args){
         String path = "./lyrics/Fall in Lie.lrc";
         lyricCleaner(path);

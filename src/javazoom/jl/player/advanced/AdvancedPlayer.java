@@ -267,4 +267,5 @@ public class AdvancedPlayer
 	public boolean getComplete(){
 		return this.complete;
 	}
+
 }
