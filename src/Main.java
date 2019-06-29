@@ -17,14 +17,5 @@ public class Main {
         GUI gui = new GUI();
         gui.show();
 
-//        LyricDownloader thread = new LyricDownloader("HALSEY", "nightmare");
-//        thread.start();
-//
-//        System.out.println(thread.getLyrics());
-
-//        LyricDownloader thread = new LyricDownloader("anathema", "hope");
-//        thread.start();
-
-        // sleep(10000);
     }
 }
