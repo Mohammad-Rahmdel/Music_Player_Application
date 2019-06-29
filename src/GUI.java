@@ -1,5 +1,11 @@
 import com.mpatric.mp3agic.InvalidDataException;
 import com.mpatric.mp3agic.UnsupportedTagException;
+import org.jaudiotagger.audio.exceptions.CannotReadException;
+import org.jaudiotagger.audio.exceptions.InvalidAudioFrameException;
+import org.jaudiotagger.audio.exceptions.ReadOnlyFileException;
+import org.jaudiotagger.tag.TagException;
+
+import javax.sound.sampled.LineUnavailableException;
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.event.MouseInputAdapter;
@@ -53,16 +59,7 @@ public class GUI {
     Border border;
     JComboBox[] comboBoxes;
 
-    public static String getMode2(){
-        return mode2;
-    }
 
-    public static void makePlay(){
-        mode2 = "play";
-        ImageIcon icon = new ImageIcon("pics/7-pause.png");
-        icon.setImage(icon.getImage().getScaledInstance(20, 20, Image.SCALE_SMOOTH));
-        controlButtons[3].setIcon(icon);
-    }
 
     public GUI() throws InvalidDataException, IOException, UnsupportedTagException {
 
@@ -119,6 +116,19 @@ public class GUI {
             loadSettings();
         }
     }
+
+    public static String getMode2(){
+        return mode2;
+    }
+
+    public static void makePlay(){
+        mode2 = "play";
+        ImageIcon icon = new ImageIcon("pics/7-pause.png");
+        icon.setImage(icon.getImage().getScaledInstance(20, 20, Image.SCALE_SMOOTH));
+        controlButtons[3].setIcon(icon);
+    }
+
+
     private void createMainPanel(){
         JPanel topPanel = new JPanel(new BorderLayout());
         topPanel.setPreferredSize(new Dimension(mainPanel.getWidth(), 60));
@@ -295,7 +305,7 @@ public class GUI {
             }
             in.close();
             fi.close();
-        }catch (IOException | ClassNotFoundException | InvalidDataException | UnsupportedTagException ex){
+        }catch (IOException | ClassNotFoundException | InvalidDataException | UnsupportedTagException | ReadOnlyFileException | LineUnavailableException | CannotReadException | TagException | InvalidAudioFrameException ex){
             ex.printStackTrace();
         }
 
@@ -308,6 +318,7 @@ public class GUI {
         screen1.setBackground(Color.lightGray);
         //TODO: GHAZAL: add visualization here//
     }
+
     private void createSettings(){
         screen3 = new JPanel();
         screen3.setBackground(new Color(139, 177, 237));
@@ -675,7 +686,7 @@ public class GUI {
     private void createToolBar(){
         toolBar = new JToolBar();
 
-        JLabel nowPlaying = new JLabel("Now Playing   ");
+        JLabel nowPlaying = new JLabel("  Playing   ");
         nowPlaying.setFont(new Font("Arial", Font.PLAIN, 35));
         nowPlaying.setForeground(Color.WHITE);
         nowPlaying.addMouseListener(mouseHandler);
@@ -743,7 +754,10 @@ public class GUI {
 
                     JLabel label = null;
                     try {
-                        label = nowPlaying.getImage();
+                        if (nowPlaying.getPath().endsWith("mp3"))
+                            label = nowPlaying.getImage();
+                        else
+                            label = nowPlaying.getDefaultImage();
                     } catch (InvalidDataException ex) {
                         ex.printStackTrace();
                     } catch (IOException ex) {
@@ -778,17 +792,17 @@ public class GUI {
                 barPanel.hide();
             }
             //barPanel buttons
-            //todo mode = shuffle
+            //todo mode = shuffle ------------
             if(e.getSource() == controlButtons[0]){
                 mode1 = "shuffle";
             }
-            //todo mode = repeat
+            //todo mode = repeat -----------------
             else if(e.getSource() == controlButtons[1]){
                 mode1 = "repeat";
             }
             //play previous song
             else if(e.getSource() == controlButtons[2]){
-                // TODO
+                // TODO TODO DODOOOOOOOOOOOOOOO
             }
             //play or pause
             else if(e.getSource() == controlButtons[3]){
@@ -808,8 +822,17 @@ public class GUI {
                     icon.setImage(icon.getImage().getScaledInstance(20, 20, Image.SCALE_SMOOTH));
                     controlButtons[3].setIcon(icon);
                     nowPlaying.setNumberOfPlays(nowPlaying.getNumberOfPlays() + 1);
-                    p = new Play(nowPlaying.offset, nowPlaying);
-                    p.start();
+
+                    if((nowPlaying.getPath()).contains(".mp3")) {
+                        p = new Play(nowPlaying.offset, nowPlaying);
+                        p.start();
+                    }
+                    else if((nowPlaying.getPath()).contains(".wav")){
+                        p = new Play(nowPlaying);
+                        p.start();
+                    }
+//                    p = new Play(nowPlaying.offset, nowPlaying);
+//                    p.start();
                 }
             }
             //play next song
@@ -844,13 +867,16 @@ public class GUI {
                     try {
                         newMusic = new Music(chooser.getSelectedFile().getPath());
                         songs.add(newMusic);
-                    } catch (IOException | UnsupportedTagException | InvalidDataException e1) {
+                    } catch (IOException | UnsupportedTagException | InvalidDataException | ReadOnlyFileException | LineUnavailableException | CannotReadException | TagException | InvalidAudioFrameException e1) {
                         e1.printStackTrace();
                     }
                 }
             }
             if (e.getSource() == westLabels[0]){
                 screen2.removeAll();
+                //TODO: get best songs
+                //TODO: get best songs
+                //TODO: get best songs
                 //TODO: get best songs
             }
             else if (e.getSource() == westLabels[1]){

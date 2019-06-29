@@ -1,13 +1,28 @@
 import com.mpatric.mp3agic.*;
 
+import org.jaudiotagger.audio.AudioFile;
+import org.jaudiotagger.audio.AudioFileIO;
+import org.jaudiotagger.audio.exceptions.CannotReadException;
+import org.jaudiotagger.audio.exceptions.InvalidAudioFrameException;
+import org.jaudiotagger.audio.exceptions.ReadOnlyFileException;
+import org.jaudiotagger.tag.FieldKey;
+import org.jaudiotagger.tag.Tag;
+import org.jaudiotagger.tag.TagException;
+
 import javax.imageio.ImageIO;
+import javax.sound.sampled.LineUnavailableException;
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.event.MouseInputAdapter;
 import java.awt.*;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
+import java.awt.image.WritableRaster;
 import java.io.*;
+import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Music extends JPanel{
 
@@ -23,7 +38,7 @@ public class Music extends JPanel{
     private boolean recentlyPlayed;
     private int numberOfPlays;
     private ArrayList<Star>starsButtons;
-    //private File f;
+    private File f;
     public int offset = 0;
     private long msTime;
 
@@ -46,6 +61,10 @@ public class Music extends JPanel{
 
     public String getGenre() {
         return genre;
+    }
+
+    public void setGenre(String genre) {
+        this.genre = genre;
     }
 
     public String getTime() {
@@ -85,46 +104,103 @@ public class Music extends JPanel{
         return null;
     }
 
+    public JLabel getDefaultImage(){
+        JLabel jLabel = new JLabel();
+        ImageIcon imageIcon;
 
-    public Music(String dir) throws InvalidDataException, IOException, UnsupportedTagException{
+        File imgPath = new File("./default.png");
+
+        try {
+            this.albumImageData = Files.readAllBytes(imgPath.toPath());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+        if (albumImageData != null){
+            Image image = null;
+            try {
+                image = ImageIO.read(new ByteArrayInputStream(albumImageData));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            image = image.getScaledInstance(300, 190, Image.SCALE_SMOOTH);
+            imageIcon = new ImageIcon(image);
+            jLabel.setIcon(imageIcon);
+        }
+        return jLabel;
+    }
+
+
+    public Music(String dir) throws InvalidDataException, IOException, UnsupportedTagException ,ReadOnlyFileException,
+            IOException, LineUnavailableException, CannotReadException, TagException, InvalidAudioFrameException {
+
 
         this.path = dir;
         extractMetaData(dir);
         makeMusicPanel();
     }
 
-    private void extractMetaData(String dir) throws InvalidDataException, UnsupportedTagException,
-            IOException{
+    private void extractMetaData(String dir) throws InvalidDataException, UnsupportedTagException, IOException, ReadOnlyFileException,
+            IOException, LineUnavailableException, CannotReadException, TagException, InvalidAudioFrameException {
         this.path = dir;
-        Mp3File mp3file = new Mp3File(dir);
 
-        time = mp3file.getLengthInSeconds();
-        msTime = mp3file.getLengthInMilliseconds();
+        if (path.endsWith(".mp3")) {
+            Mp3File mp3file = new Mp3File(dir);
 
-        if (mp3file.hasId3v1Tag()) {
-            ID3v1 id3v1Tag = mp3file.getId3v1Tag();
-            this.artist = id3v1Tag.getArtist();
-            this.title = id3v1Tag.getTitle();
-            this.album = id3v1Tag.getAlbum();
-            this.genre = id3v1Tag.getGenreDescription();
+            time = mp3file.getLengthInSeconds();
+            msTime = mp3file.getLengthInMilliseconds();
+
+            if (mp3file.hasId3v1Tag()) {
+                ID3v1 id3v1Tag = mp3file.getId3v1Tag();
+                this.artist = id3v1Tag.getArtist();
+                this.title = id3v1Tag.getTitle();
+                this.album = id3v1Tag.getAlbum();
+                this.genre = id3v1Tag.getGenreDescription();
 //            System.out.println(id3v1Tag.getGenreDescription());
+            }
+
+
+            if (mp3file.hasId3v2Tag()) {
+                ID3v2 id3v2Tag = mp3file.getId3v2Tag();
+
+                if (this.artist.equals(""))
+                    this.artist = id3v2Tag.getArtist();
+                if (this.title.equals(""))
+                    this.title = id3v2Tag.getTitle();
+                if (this.album.equals(""))
+                    this.album = id3v2Tag.getAlbum();
+                if (this.genre.equals("") || this.genre.toLowerCase().equals("unknown"))
+                    this.genre = id3v2Tag.getGenreDescription();
+
+
+                albumImageData = id3v2Tag.getAlbumImage();
+            }
         }
+        else{
+            this.f = new File(dir);
+            AudioFile audioFile = AudioFileIO.read(new File(dir));
+            this.artist = audioFile.getTag().getFirst(FieldKey.ARTIST);
+            this.title = audioFile.getTag().getFirst(FieldKey.TITLE);
+            this.album = audioFile.getTag().getFirst(FieldKey.ALBUM);
+            this.genre = audioFile.getTag().getFirst(FieldKey.GENRE);
 
+            Tag tag = audioFile.getTag();
+            this.time = audioFile.getAudioHeader().getTrackLength() ;
 
-        if (mp3file.hasId3v2Tag()) {
-            ID3v2 id3v2Tag = mp3file.getId3v2Tag();
-
-            if (this.artist.equals(""))
-                this.artist = id3v2Tag.getArtist();
-            if (this.title.equals(""))
-                this.title = id3v2Tag.getTitle();
-            if (this.album.equals(""))
-                this.album = id3v2Tag.getAlbum();
-            if (this.genre.equals("") || this.genre.toLowerCase().equals("unknown"))
-                this.genre = id3v2Tag.getGenreDescription();
-
-
-            albumImageData = id3v2Tag.getAlbumImage();
+            if (this.artist.equals("")){
+                String[] s = this.path.split("/");
+                String x = s[s.length - 1];
+                this.artist = x.substring(0, x.length()-4);
+            }
+            if (this.title.equals("")){
+                String[] s = this.path.split("/");
+                String x = s[s.length - 1];
+                this.title = x.substring(0, x.length()-4);
+            }
+            if (this.genre.equals("")){
+             setGenre("unknown");
+            }
         }
 
     }
@@ -170,12 +246,18 @@ public class Music extends JPanel{
         labels[0].setText(getTitle());
         labels[1].setText(getTime());
         labels[2].setText(getArtist());
-        //labels[3].setText(getGenre());
-        labels[3].setText("unknown");
+        labels[3].setText(getGenre());
+
+
         labels[3].addMouseListener(new MouseInputAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                //todo
+                // comment the below if statement
+                String[] unknowns = {"unknown", "other"};
+                if (Arrays.asList(unknowns).contains(getGenre().toLowerCase())) {
+                    GenreClassification g = new GenreClassification(getPath(),genre, labels[3]);
+                    g.start();
+                }
             }
         });
         JPanel hold = new JPanel();
@@ -241,6 +323,10 @@ public class Music extends JPanel{
 
     public String getArtist() {
         return artist;
+    }
+
+    public File getFile() {
+        return f;
     }
 
     public String getAlbum() {

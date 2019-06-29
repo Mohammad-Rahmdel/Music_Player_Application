@@ -1,5 +1,9 @@
 import com.mpatric.mp3agic.InvalidDataException;
 import com.mpatric.mp3agic.UnsupportedTagException;
+import org.jaudiotagger.audio.exceptions.CannotReadException;
+import org.jaudiotagger.audio.exceptions.InvalidAudioFrameException;
+import org.jaudiotagger.audio.exceptions.ReadOnlyFileException;
+import org.jaudiotagger.tag.TagException;
 
 
 import javax.sound.sampled.LineUnavailableException;
@@ -91,8 +95,7 @@ public class Playlist {
                 try {
                     addMusic();
                     GUI.repaint();
-                } catch (IOException | UnsupportedTagException | InvalidDataException |
-                        LineUnavailableException | UnsupportedAudioFileException e1) {
+                } catch (IOException | UnsupportedTagException | InvalidDataException | LineUnavailableException | UnsupportedAudioFileException | TagException | ReadOnlyFileException | CannotReadException | InvalidAudioFrameException e1) {
                     e1.printStackTrace();
                 }
             }
@@ -106,7 +109,7 @@ public class Playlist {
     }
     private void addMusic() throws IOException, UnsupportedTagException,
             InvalidDataException, UnsupportedAudioFileException,
-            LineUnavailableException {
+            LineUnavailableException, TagException, ReadOnlyFileException, CannotReadException, InvalidAudioFrameException {
 
         JFileChooser chooser = new JFileChooser();
         FileNameExtensionFilter filter = new FileNameExtensionFilter(
