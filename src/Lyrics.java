@@ -1,3 +1,4 @@
+import java.awt.*;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -5,7 +6,7 @@ import java.nio.file.Paths;
 
 public class Lyrics {
     private static int fontSize;
-    private static String color;
+    private static Color color;
     private static String fontName;
     private File text;
     public Lyrics(){
@@ -20,8 +21,7 @@ public class Lyrics {
         Lyrics.fontName = fontName;
     }
 
-    public static void setColor(String color) {
-
+    public static void setColor(Color color) {
         Lyrics.color = color;
     }
 
@@ -29,7 +29,7 @@ public class Lyrics {
         return fontSize;
     }
 
-    public static String getColor() {
+    public static Color getColor() {
         return color;
     }
 
