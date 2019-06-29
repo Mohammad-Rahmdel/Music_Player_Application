@@ -829,17 +829,8 @@ public class GUI {
                     icon.setImage(icon.getImage().getScaledInstance(20, 20, Image.SCALE_SMOOTH));
                     controlButtons[3].setIcon(icon);
                     nowPlaying.setNumberOfPlays(nowPlaying.getNumberOfPlays() + 1);
-
-                    if((nowPlaying.getPath()).contains(".mp3")) {
-                        p = new Play(nowPlaying.offset, nowPlaying);
-                        p.start();
-                    }
-                    else if((nowPlaying.getPath()).contains(".wav")){
-                        p = new Play(nowPlaying);
-                        p.start();
-                    }
-//                    p = new Play(nowPlaying.offset, nowPlaying);
-//                    p.start();
+                    p = new Play(nowPlaying.offset, nowPlaying);
+                    p.start();
                 }
             }
             //play next song

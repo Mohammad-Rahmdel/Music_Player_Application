@@ -30,9 +30,9 @@ public class Play extends Thread {
     }
 
 
-    public Play(Music m){
-        this.music = m;
-    }
+//    public Play(Music m){
+//        this.music = m;
+//    }
 
 
     public void run() {
@@ -54,7 +54,6 @@ public class Play extends Thread {
 //            } catch (Exception e) {
 //                System.out.println(e);
 //            }
-
         try {
             this.path = music.getPath();
             if (path.contains(".mp3")) {
@@ -70,34 +69,30 @@ public class Play extends Thread {
                 else
                     p.play((int) (offset * sampleRate / (time * 1000)), 130000);
             } else if (path.contains(".wav")) {
-
-                if (clip == null) {
+                loadClip();
+                if (offset ==0) {
                     try {
-                        loadClip();
                         clip.start();
                     } catch (Exception ex) {
                         ex.printStackTrace();
                     }
                 } else {
 
-                    if (clip.isRunning()) {
-                        lastFrame = clip.getFramePosition();
-                        clip.stop();
+                    if (offset < clip.getFrameLength()) {
+                        clip.setFramePosition(offset);
                     } else {
-                        if (lastFrame < clip.getFrameLength()) {
-                            clip.setFramePosition(lastFrame);
-                        } else {
-                            clip.setFramePosition(0);
-                        }
-                        clip.start();
+                        clip.setFramePosition(0);
                     }
-
+                    clip.start();
                 }
+
             }
+
 
         } catch (Exception e) {
             System.out.println(e);
         }
+
 
 
     }
@@ -144,14 +139,9 @@ public class Play extends Thread {
 
         } else
         if (path.contains(".wav")) {
-
-
-            if (clip.isRunning()) {
-                lastFrame = clip.getFramePosition();
-                clip.stop();
-                output= lastFrame;
-            }
-
+            lastFrame = clip.getFramePosition();
+            clip.stop();
+            output= lastFrame;
         }
         return output;
     }
