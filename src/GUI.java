@@ -61,9 +61,15 @@ public class GUI {
     Border border;
     JComboBox[] comboBoxes;
 
+    private KeyAdapter keyAdapter;
+    private KeyAdapter2 keyAdapter2;
+
 
 
     public GUI() throws InvalidDataException, IOException, UnsupportedTagException {
+
+        keyAdapter = new KeyAdapter();
+        keyAdapter2 = new KeyAdapter2();
 
         PlayButtonUpdator thread = new PlayButtonUpdator();
         thread.start();
@@ -398,6 +404,7 @@ public class GUI {
         sLayout.putConstraint(SpringLayout.WEST, comboBoxes[2], 2, SpringLayout.EAST, color);
 
         JButton q = new JButton("Create a Queue");
+        q.addKeyListener(keyAdapter2);
         q.addMouseListener(new MouseInputAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -469,6 +476,7 @@ public class GUI {
         p.setFont(new Font("Arial", Font.PLAIN, 20));
 
         JButton pButton = createIcon("add.png");
+        pButton.addKeyListener(keyAdapter2);
         pButton.addMouseListener(new MouseInputAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -551,6 +559,7 @@ public class GUI {
         controlButtons[1] = createIcon("pics/2-repeat.png");
         controlButtons[2] = createIcon("pics/3-backward.png");
         controlButtons[3] = createIcon("pics/4-play.png");
+        controlButtons[3].addKeyListener(keyAdapter);
         controlButtons[4] = createIcon("pics/5-forward.png");
         //controlButtons[5] = createIcon("pics/6-speaker.png");
 
@@ -748,6 +757,9 @@ public class GUI {
         repaint();
     }
 
+
+
+
     private class MouseHandler extends MouseInputAdapter {
 
         @Override
@@ -870,6 +882,7 @@ public class GUI {
                     }
                 }
             }
+
             if (e.getSource() == westLabels[0]){ // TOP SONGS clicked
 
                 screen2.removeAll();
@@ -951,6 +964,98 @@ public class GUI {
             repaint();
         }
     }
+
+
+    private class KeyAdapter implements KeyListener {
+        public void keyReleased(KeyEvent e) {
+        }
+
+        @Override
+        public void keyTyped(KeyEvent e) { // Some code
+        }
+
+        @Override
+        public void keyPressed(KeyEvent e) { // Some code
+            int kReleased = e.getKeyCode();
+            switch (kReleased) {
+
+                case KeyEvent.VK_SPACE: {
+
+                    if (mode2.equals("play")){
+
+                        mode2 = "pause";
+                        ImageIcon icon = new ImageIcon("pics/4-play.png");
+                        icon.setImage(icon.getImage().getScaledInstance(20, 20, Image.SCALE_SMOOTH));
+                        controlButtons[3].setIcon(icon);
+                        nowPlaying.offset = p.pause();
+                    }
+                    else{
+                        if (nowPlaying == null)
+                            return;
+                        mode2 = "play";
+                        ImageIcon icon = new ImageIcon("pics/7-pause.png");
+                        icon.setImage(icon.getImage().getScaledInstance(20, 20, Image.SCALE_SMOOTH));
+                        controlButtons[3].setIcon(icon);
+                        nowPlaying.setNumberOfPlays(nowPlaying.getNumberOfPlays() + 1);
+                        p = new Play(nowPlaying.offset, nowPlaying);
+                        p.start();
+                    }
+                    break;
+                }
+
+                default:
+                    break;
+
+            }
+
+        }
+
+    }
+
+
+
+    private class KeyAdapter2 implements KeyListener {
+        public void keyReleased(KeyEvent e) {
+        }
+
+        @Override
+        public void keyTyped(KeyEvent e) { // Some code
+        }
+
+        @Override
+        public void keyPressed(KeyEvent e) { // Some code
+            int kReleased = e.getKeyCode();
+            switch (kReleased) {
+                case KeyEvent.VK_Q: {
+                    JFrame q = createFrame("Create your queue", 400, 300);
+                    JPanel main = new JPanel(new BorderLayout());
+                    JPanel top = new JPanel();
+                    top.setLayout(new BoxLayout(top, BoxLayout.Y_AXIS));
+                    top.setBackground(Color.blue);
+                    JPanel bottom = new JPanel(new FlowLayout());
+                    JButton ok = new JButton("OK");
+                    JButton cancel = new JButton("Cancel");
+                    cancel.addActionListener(e15 -> q.setVisible(false));
+                    bottom.add(ok);
+                    bottom.add(cancel);
+                    main.add(top, BorderLayout.CENTER);
+                    main.add(bottom, BorderLayout.SOUTH);
+                    q.add(main);
+                    q.setVisible(true);
+                    break;
+                }
+
+                default:
+                    break;
+
+            }
+
+        }
+
+    }
+
+
+
     private class PlayButtonUpdator extends Thread
     {
         @Override
