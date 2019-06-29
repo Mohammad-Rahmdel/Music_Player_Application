@@ -23,6 +23,7 @@ import java.util.ArrayList;
 public class GUI {
 
     private GetLyric thread2 = null;
+    private TopSongs threadTopSongs = null;
 
     static ArrayList<Music>songs;
     static ArrayList<Music>favorites;
@@ -44,6 +45,7 @@ public class GUI {
     public static JPanel screen2;         //library screen
     private static JPanel screen3;         //settings screen
     private JPanel titles;
+    private JPanel topMusics = null;
 
     private JScrollPane jScrollPane;
 
@@ -65,6 +67,9 @@ public class GUI {
 
         PlayButtonUpdator thread = new PlayButtonUpdator();
         thread.start();
+
+        threadTopSongs = new TopSongs();
+        threadTopSongs.start();
 
         comboBoxes = new JComboBox[4];
         for (int i = 0; i < 4; i++) {
@@ -514,7 +519,7 @@ public class GUI {
                 temp.setValue(Integer.decode(s));
             }
         } catch (IOException e1) {
-            e1.printStackTrace();
+//            e1.printStackTrace();
         }
         temp.addChangeListener(e -> {
 
@@ -731,6 +736,7 @@ public class GUI {
             }
         });
     }
+
     private void showFavorites(){
         for (int i = 0; i < songs.size(); i++) {
             songs.get(i).setRating();
@@ -741,6 +747,7 @@ public class GUI {
         }
         repaint();
     }
+
     private class MouseHandler extends MouseInputAdapter {
 
         @Override
@@ -872,12 +879,53 @@ public class GUI {
                     }
                 }
             }
-            if (e.getSource() == westLabels[0]){
+            if (e.getSource() == westLabels[0]){ // TOP SONGS clicked
+
                 screen2.removeAll();
-                //TODO: get best songs
-                //TODO: get best songs
-                //TODO: get best songs
-                //TODO: get best songs
+                topMusics = new JPanel();
+                topMusics.setPreferredSize(new Dimension(700, 1400));
+                topMusics.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));
+
+
+                String response = threadTopSongs.getResponse();
+                String[] songs = response.split("\n \n");
+
+                if (songs.length == 1){
+                    JLabel label = new JLabel();
+                    label.setPreferredSize(new Dimension(400, 50));
+                    label.setBorder(border);
+                    label.setHorizontalAlignment(SwingConstants.CENTER);
+                    label.setText(threadTopSongs.getResponse());
+                    topMusics.add(label);
+
+                    threadTopSongs = new TopSongs();
+                    threadTopSongs.start();
+                }
+                else {
+                    JLabel[] labels = new JLabel[11];
+
+                    labels[0] = new JLabel();
+                    labels[0].setPreferredSize(new Dimension(400, 50));
+                    labels[0].setBorder(border);
+                    labels[0].setHorizontalAlignment(SwingConstants.CENTER);
+                    labels[0].setText("Billboard Top Songs");
+
+                    for(int i=1; i<11; i++){
+                        labels[i] = new JLabel();
+                        labels[i].setPreferredSize(new Dimension(400, 50));
+                        labels[i].setBorder(border);
+                        labels[i].setHorizontalAlignment(SwingConstants.LEFT);
+
+                        String j1 = songs[i-1].split("\n")[0];
+                        String j2 = songs[i-1].split("\n")[1];
+                        String j = "<html>" + j1 + "<br/>   " + j2 + "</html>";
+                        labels[i].setText(j);
+                    }
+                    for (JLabel tmp : labels)
+                        topMusics.add(tmp);
+                }
+                screen2.add(topMusics);
+                repaint();
             }
             else if (e.getSource() == westLabels[1]){
                 //show recently played
